@@ -23,8 +23,21 @@ while True:
 
     frame_face_mesh, face_mesh_results = detector.detectFacialLandmarks(frame, detector.faceMeshVideos) 
 
+    if face_mesh_results.multi_face_landmarks:
+        mouth_frame, mouth_status = detector.isOpen(frame, face_mesh_results, 'MOUTH', threshold=15)
+        left_eye_frame, left_eye_status = detector.isOpen(frame, face_mesh_results, 'LEFT EYE', threshold=4.5)
+        right_eye_frame, right_eye_status = detector.isOpen(frame, face_mesh_results, 'RIGHT EYE', threshold=4.5)
+
+        for face_num, face_landmarks in enumerate(face_mesh_results.multi_face_landmarks):
+            if left_eye_status[face_num] == 'OPEN':
+                frame = detector.masking(frame, left_eye, face_landmarks,'LEFT EYE', detector.mpFaceMesh.FACEMESH_LEFT_EYE)
+            if right_eye_status[face_num] == 'OPEN': 
+                frame = detector.masking(frame, right_eye, face_landmarks, 'RIGHT EYE', detector.mpFaceMesh.FACEMESH_RIGHT_EYE)
+            if mouth_status[face_num] == 'OPEN':
+                frame = detector.masking(frame, smoke_frame, face_landmarks, 'MOUTH', detector.mpFaceMesh.FACEMESH_LIPS)
+                          
     cv2.imshow('Frame', frame)
-    cv2.imshow('Frame', frame_face_mesh)
+    # cv2.imshow('Frame', frame_face_mesh)
     if cv2.waitKey(10) & 0xFF == ord('q'):
         break
     
